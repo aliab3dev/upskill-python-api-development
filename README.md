@@ -19,7 +19,9 @@ Code accompanying the [Python API Development](https://www.youtube.com/watch?v=0
 
 ### Code Setup 
 
-To be added.
+```
+uvicorn app.main:app --reload
+```
 
 ### Data Setup
 To be added. 
