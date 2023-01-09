@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Response, status, HTTPException
-from fastapi.params import Body
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel
 import random
 
@@ -12,6 +11,7 @@ class Post(BaseModel):
     # title: str, content: str
     title: str
     content: str
+    published: bool = True
 
 
 def find_post(id: int):
