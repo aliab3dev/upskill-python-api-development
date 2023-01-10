@@ -2,12 +2,10 @@ from fastapi import FastAPI, status, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
-from . import models, schemas
+from . import models, schemas, utils
 from .database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
-
-
 app = FastAPI()
 
 
@@ -81,7 +79,15 @@ def get_posts(db: Session = Depends(get_db)):
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
 def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
 
-    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+    # store password hash
+    print(user.password)
+    hashed_password = utils.pwd_context.hash(user.password)
+    print(type(hashed_password), hashed_password)
+    user.password = hashed_password
+
+    existing_user = (
+        db.query(models.User).filter(models.User.email == user.email).first()
+    )
     if existing_user is None:
         new_user = models.User(**user.dict())
         print(type(new_user))
@@ -95,3 +101,13 @@ def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
         return existing_user
 
 
+@app.get("/users/{id}", response_model=schemas.User)
+def get_user(id: int, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"user with id: {id} not found!",
+        )
+    return user
