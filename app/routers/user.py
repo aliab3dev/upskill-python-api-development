@@ -8,8 +8,8 @@ from ..database import get_db
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/", response_model=List[schemas.User])
-def get_posts(db: Session = Depends(get_db)):
+@router.get("", response_model=List[schemas.User])
+def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
 
     return users
@@ -27,13 +27,11 @@ def get_user(id: int, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
 def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
 
     # store password hash
-    print(user.password)
     hashed_password = utils.pwd_context.hash(user.password)
-    print(type(hashed_password), hashed_password)
     user.password = hashed_password
 
     existing_user = (
@@ -41,7 +39,6 @@ def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     )
     if existing_user is None:
         new_user = models.User(**user.dict())
-        print(type(new_user))
         db.add(new_user)
         db.commit()
         db.refresh(new_user)

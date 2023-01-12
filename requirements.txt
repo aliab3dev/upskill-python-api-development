@@ -3,3 +3,4 @@ black[d]
 psycopg2
 sqlalchemy
 passlib[bcrypt]
+python-jose[cryptography]
