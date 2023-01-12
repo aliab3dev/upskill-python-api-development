@@ -24,7 +24,7 @@ def get_posts(
 def get_posts(
     id: int,
     db: Session = Depends(get_db),
-    user_id: schemas.TokenData = Depends(oauth2.get_current_user),
+    current_user: schemas.User = Depends(oauth2.get_current_user),
 ):
 
     post = db.query(models.Post).filter(models.Post.id == id).first()
@@ -42,13 +42,10 @@ def get_posts(
 def create_post(
     post: schemas.PostBase,
     db: Session = Depends(get_db),
-    user_id: schemas.TokenData = Depends(oauth2.get_current_user),
+    current_user: schemas.User = Depends(oauth2.get_current_user),
 ):
 
-    print(user_id)
-    print(type(user_id))
-
-    new_post = models.Post(**post.dict())
+    new_post = models.Post(user_id=current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -58,19 +55,27 @@ def create_post(
 
 @router.put("/{id}", response_model=schemas.Post)
 def update_post(
-    post: schemas.PostBase,
+    updated_post: schemas.PostBase,
     id: int,
     db: Session = Depends(get_db),
-    user_id: schemas.TokenData = Depends(oauth2.get_current_user),
+    current_user: schemas.User = Depends(oauth2.get_current_user),
 ):
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
-    if post_query.first() is None:
+    post = post_query.first()
+
+    if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id: {id} not found!",
         )
-    post_query.update(post.dict(), synchronize_session=False)
+    if post.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"not authorized to perform the requested action!",
+        )
+
+    post_query.update(updated_post.dict(), synchronize_session=False)
     db.commit()
 
     return post_query.first()
@@ -80,14 +85,22 @@ def update_post(
 def delete_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: schemas.TokenData = Depends(oauth2.get_current_user),
+    current_user: schemas.User = Depends(oauth2.get_current_user),
 ):
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
-    if post_query.first() is None:
+    post = post_query.first()
+
+    if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id: {id} not found!",
+        )
+
+    if post.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"not authorized to perform the requested action!",
         )
 
     post_query.delete(synchronize_session=False)
