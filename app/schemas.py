@@ -34,6 +34,14 @@ class Post(PostBase):
         orm_mode = True
 
 
+class PostWithLikes(BaseModel):
+    Post: Post
+    likes: int
+
+    class Config:
+        orm_mode = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -41,3 +49,17 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+
+class VoteBase(BaseModel):
+    post_id: int
+    dir: int
+
+
+class Vote(BaseModel):
+    post_id: int
+    user_id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
