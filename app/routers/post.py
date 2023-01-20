@@ -1,5 +1,6 @@
 from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 
 from .. import models, schemas, oauth2
@@ -9,7 +10,7 @@ from ..database import get_db
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
-@router.get("", response_model=List[schemas.Post])
+@router.get("", response_model=List[schemas.PostWithLikes])
 def get_posts(
     db: Session = Depends(get_db),
     current_user: schemas.User = Depends(oauth2.get_current_user),
@@ -18,8 +19,11 @@ def get_posts(
     search: Optional[str] = None,
 ):
     # print(current_user.email)
+
     posts = (
-        db.query(models.Post)
+        db.query(models.Post, func.count(models.Vote.user_id).label("likes"))
+        .join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True)
+        .group_by(models.Post.id)
         .filter(models.Post.title.contains(search))
         .limit(limit)
         .offset(skip)
@@ -29,21 +33,26 @@ def get_posts(
     return posts
 
 
-@router.get("/{id}", response_model=schemas.Post)
-def get_posts(
+@router.get("/{id}", response_model=schemas.PostWithLikes)
+def get_post(
     id: int,
     db: Session = Depends(get_db),
     current_user: schemas.User = Depends(oauth2.get_current_user),
 ):
 
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = (
+        db.query(models.Post, func.count(models.Vote.user_id).label("likes"))
+        .join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True)
+        .group_by(models.Post.id)
+        .filter(models.Post.id == id)
+        .first()
+    )
 
     if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id: {id} not found!",
         )
-
     return post
 
 
