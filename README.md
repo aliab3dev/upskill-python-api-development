@@ -17,11 +17,30 @@ Code accompanying the [Python API Development](https://www.youtube.com/watch?v=0
 > pip install -r requirements.txt
 ```
 
-### Code Setup 
+### Server Setup 
 
 ```
 uvicorn app.main:app --reload
 ```
 
-### Data Setup
-To be added. 
+### Database Migration Setup
+
+```
+# initialize alembic in a directory named alembic
+alembic init alembic
+
+# create manual revisions to db schemas
+alembic revision -m "Create post table"
+
+# upgrade/downgrade revision
+alembic upgrade <revision, head, +1>
+alembic downgrade <revision, -1,>
+
+# navigate alembic
+alembic history
+alembic current
+alembic heads
+
+# create automatic revisions to db schemas
+alembic revision --autogenerate -m "Create posts, users and votes tables"
+```
