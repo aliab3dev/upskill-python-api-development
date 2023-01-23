@@ -52,3 +52,15 @@ alembic revision --autogenerate -m "Create posts, users and votes tables"
 # generate random string to use in .env file for SECRET_KEY
 openssl rand -hex 32 
 ```
+
+
+### System-wide Installations and Account Setup
+
+```
+git CLI
+heroku CLI
+
+github account
+heroku account
+
+```
