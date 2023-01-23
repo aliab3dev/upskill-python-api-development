@@ -41,6 +41,14 @@ alembic history
 alembic current
 alembic heads
 
-# create automatic revisions to db schemas
+# create automatic revisions to db schemas 
+# checks diff between target and current state: target_metadata = Base.metadata
 alembic revision --autogenerate -m "Create posts, users and votes tables"
+```
+
+
+### Set Secret for JWT Generation
+ ```
+# generate random string to use in .env file for SECRET_KEY
+openssl rand -hex 32 
 ```
