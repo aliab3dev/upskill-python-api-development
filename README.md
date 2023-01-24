@@ -23,7 +23,7 @@ Code accompanying the [Python API Development](https://www.youtube.com/watch?v=0
 uvicorn app.main:app --reload
 ```
 
-### Database Migration Setup
+### Database Migration Setup (Dev)
 
 ```
 # initialize alembic in a directory named alembic
@@ -53,6 +53,22 @@ alembic revision --autogenerate -m "Create posts, users and votes tables"
 openssl rand -hex 32 
 ```
 
+### Heroku Commands
+
+```
+# push code changes to heroku git repository
+git push heroku main
+
+# restart heroku app
+heroku ps:restart
+
+# see logs
+heroku logs --tail
+
+# setup tables in postgres db (prod)
+heroku run "alembic upgrade head"
+```
+
 
 ### System-wide Installations and Account Setup
 
@@ -62,5 +78,6 @@ heroku CLI
 
 github account
 heroku account
-
 ```
+
+
