@@ -56,6 +56,9 @@ openssl rand -hex 32
 ### Heroku Commands
 
 ```
+# push code changes to github git repository
+git push origin main
+
 # push code changes to heroku git repository
 git push heroku main
 
